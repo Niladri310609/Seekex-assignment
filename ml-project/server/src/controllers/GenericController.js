@@ -56,7 +56,7 @@ const createBucket = async (req, res) => {
 
     const BucketsData = {
       Name: Name,
-      capacity: capacity,
+      capacity_in_Ci: capacity,
     };
     const Buckets_Added = await Buckets.create(BucketsData);
 
