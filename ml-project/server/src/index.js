@@ -7,6 +7,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const route = require("./routes/routes");
 const cors = require("cors");
+const multer = require('multer')
 
 const PORT = 7001;
 const MONGO_URI = process.env.MONGO_URI;
@@ -29,6 +30,8 @@ app.use(
 );
 
 app.use(bodyParser.json());
+app.use(multer().any())
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
