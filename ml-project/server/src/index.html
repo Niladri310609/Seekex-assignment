@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buckets and Balls</title>
+</head>
+<body>
+
+  <h1>Buckets and Balls Management</h1>
+  <div id="responseMessage" style="display: none;"></div>
+
+  <!-- Bucket Form -->
+  <form id="bucketForm">
+    <h2>Create Bucket</h2>
+    <label for="bucketName">Bucket Name:</label>
+    <input type="text" id="bucketName" required>
+    <label for="bucketCapacity">Bucket Capacity:</label>
+    <input type="number" id="bucketCapacity" required>
+    <button type="submit">Create Bucket</button>
+  </form>
+
+  <!-- Ball Form -->
+  <form id="ballForm">
+    <h2>Create Ball</h2>
+    <label for="ballColor">Ball Color:</label>
+    <input type="text" id="ballColor" required>
+    <label for="ballSize">Ball Size:</label>
+    <input type="number" id="ballSize" required>
+    <label for="ballNumber">Number of Balls:</label>
+    <input type="number" id="ballNumber" required>
+    <button type="submit">Create Ball</button>
+  </form>
+
+  <!-- Place Balls in Buckets Form -->
+  <form id="Bucket Suggestion">
+    <h2>Place Balls in Buckets</h2>
+    <button type="submit">Place Balls</button>
+  </form>
+
+  <script>
+    const bucketForm = document.getElementById('bucketForm');
+    const responseMessage = document.getElementById('responseMessage'); // Reference to the response message div
+
+    const ballForm = document.getElementById('ballForm');
+    const placeBallsForm = document.getElementById('placeBallsForm');
+
+    bucketForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const bucketName = document.getElementById('bucketName').value;
+      const bucketCapacity = document.getElementById('bucketCapacity').value;
+
+      // Example using fetch:
+      fetch(`http://localhost:7001/addbucket`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ Name: bucketName, capacity: bucketCapacity }),
+      })
+      .then(response => response.json())
+      .then(data => {
+    responseMessage.textContent = `Response: ${data.message}`;
+    responseMessage.style.display = 'block';
+  })      .catch(error => console.error('Error:', error));
+    });
+
+    ballForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const ballColor = document.getElementById('ballColor').value;
+      const ballSize = document.getElementById('ballSize').value;
+      const ballNumber = document.getElementById('ballNumber').value;
+
+      // Call your createBall API with the provided data
+      // Example using fetch:
+      fetch(`http://localhost:7001/addball`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ color: ballColor, size: ballSize, number: ballNumber }),
+      })
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error('Error:', error));
+    });
+
+    // placeBallsForm.addEventListener('submit', function (event) {
+    //   event.preventDefault();
+
+    //   // Call your placeBallsInBuckets API
+    //   // Example using fetch:
+    //   fetch(`http://localhost:7001/placeBallsInBuckets`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //   })
+    //   .then(response => response.json())
+    //   .then(data => console.log(data))
+    //   .catch(error => console.error('Error:', error));
+    // });
+  </script>
+
+</body>
+</html>

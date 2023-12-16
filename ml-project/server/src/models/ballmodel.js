@@ -4,6 +4,7 @@ const Ballschema = new mongoose.Schema(
   {
       color: {type:String, trim:true, required:true, unique:true},
   size: {type:Number, required:true},
+  number:{type:Number, required:true}
 
 
   },
