@@ -7,9 +7,10 @@
 </head>
 <body>
 
-  <h1>Buckets and Balls Management</h1>
+  <h3>Buckets and Balls Management</h3>
   <div id="responseMessage" style="display: none;"></div>
 
+ 
   <!-- Bucket Form -->
   <form id="bucketForm">
     <h2>Create Bucket</h2>
@@ -26,25 +27,110 @@
     <label for="ballColor">Ball Color:</label>
     <input type="text" id="ballColor" required>
     <label for="ballSize">Ball Size:</label>
-    <input type="number" id="ballSize" required>
-    <label for="ballNumber">Number of Balls:</label>
-    <input type="number" id="ballNumber" required>
+    <input type="text" id="ballSize">
     <button type="submit">Create Ball</button>
   </form>
 
   <!-- Place Balls in Buckets Form -->
-  <form id="Bucket Suggestion">
-    <h2>Place Balls in Buckets</h2>
-    <button type="submit">Place Balls</button>
-  </form>
+ 
+    <h2>Bucket Suggestion</h2>
+    <form id="bucketSuggestionForm">
+      <style>
+        body {
+      background-image: url('/home/ds/Desktop/SEEKEX ASSIGNMENT/Seekex-assignment/ml-project/server/src/assets/images.jpeg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed; 
+    }
+    .table-container {
+  width: 80%;
+  margin: 0 auto;
+  border-radius: 25px;
+  overflow: hidden;
+}
 
+        table {
+          width: 100%; 
+        /* margin: 0 auto; */
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        /* border-radius: 25px; */
+        }
+  
+        th, td {
+          border: 1px solid #a48585;
+          padding: 8px;
+          text-align: left;
+        }
+  
+        th {
+          background-color: #a6b2b8;
+        }
+  
+        .numberOfBallsInput {
+          width: 50px;
+        }
+
+        h3 {
+        text-align: center;
+      }
+      .emptyMessage {
+        text-align: center;
+        color: #be3a3a;
+      }
+  
+      button {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 25px; 
+}
+  
+        button:hover {
+          background-color: #45a049;
+        }
+     
+
+      </style>
+      <table id="ballsTable">
+        <h3>List of Balls</h3>
+        <thead>
+          <tr>
+            <th>Color</th>
+            <th>Size(cm^3)</th>
+            <th>Number of Balls</th>
+          </tr>
+        </thead>
+        <!-- Table body will be dynamically populated using JavaScript -->
+        <tbody></tbody>
+      </table>
+      <div id="emptyMessage" class="emptyMessage" style="display: none;">No balls available.</div>
+
+      <button type="submit">Place Balls In Bucket</button>
+    </form>
+
+    <h2>Result</h2>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   <script>
     const bucketForm = document.getElementById('bucketForm');
     const responseMessage = document.getElementById('responseMessage'); // Reference to the response message div
 
-    const ballForm = document.getElementById('ballForm');
-    const placeBallsForm = document.getElementById('placeBallsForm');
-
+ 
     bucketForm.addEventListener('submit', function (event) {
       event.preventDefault();
       const bucketName = document.getElementById('bucketName').value;
@@ -64,42 +150,94 @@
     responseMessage.style.display = 'block';
   })      .catch(error => console.error('Error:', error));
     });
+    
+    const ballForm = document.getElementById('ballForm');
 
     ballForm.addEventListener('submit', function (event) {
       event.preventDefault();
       const ballColor = document.getElementById('ballColor').value;
-      const ballSize = document.getElementById('ballSize').value;
-      const ballNumber = document.getElementById('ballNumber').value;
+      const ballSize = document.getElementById('ballSize').value.toString();
 
-      // Call your createBall API with the provided data
-      // Example using fetch:
+   
       fetch(`http://localhost:7001/addball`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ color: ballColor, size: ballSize, number: ballNumber }),
+        body: JSON.stringify({ color: ballColor, size: ballSize}),
+        
       })
       .then(response => response.json())
-      .then(data => console.log(data))
-      .catch(error => console.error('Error:', error));
+      .then(data => {
+    responseMessage.textContent = `Response: ${data.message}`;
+    responseMessage.style.display = 'block';
+    setTimeout(() => {
+        location.reload();
+      }, 50);
+    })
+       .catch(error => console.error('Error:', error));
     });
 
-    // placeBallsForm.addEventListener('submit', function (event) {
-    //   event.preventDefault();
 
-    //   // Call your placeBallsInBuckets API
-    //   // Example using fetch:
-    //   fetch(`http://localhost:7001/placeBallsInBuckets`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //   })
-    //   .then(response => response.json())
-    //   .then(data => console.log(data))
-    //   .catch(error => console.error('Error:', error));
-    // });
+ 
+    document.getElementById('bucketSuggestionForm').addEventListener('submit', function (event) {
+  event.preventDefault();
+
+  // Iterate through table rows to get input values
+  const tableRows = document.querySelectorAll('#ballsTable tbody tr');
+  tableRows.forEach(row => {
+    const color = row.dataset.color;
+    const numberOfBallsInput = row.querySelector('.numberOfBallsInput');
+    const numberOfBalls = numberOfBallsInput.value;
+
+    // You can now use color and numberOfBalls as needed (e.g., send to the server)
+    console.log(`Color: ${color}, Number of Balls: ${numberOfBalls}`);
+  });
+});
+
+// Fetch data from the API and populate the table
+fetch('http://localhost:7001/list_of_balls')
+.then(response => response.json())
+  .then(data => {
+    const tbody = document.querySelector('#ballsTable tbody');
+    const emptyMessage = document.getElementById('emptyMessage');
+
+    console.log(data);
+
+    if (Array.isArray(data.data) && data.data.length > 0) {
+      data.data.forEach(ball => {
+        const row = document.createElement('tr');
+        row.dataset.color = ball.color; 
+
+        // Append cells to the row
+        const colorCell = document.createElement('td');
+        colorCell.textContent = ball.color;
+        row.appendChild(colorCell);
+
+        const sizeCell = document.createElement('td');
+        sizeCell.textContent = ball.size;
+        row.appendChild(sizeCell);
+
+        const numberOfBallsCell = document.createElement('td');
+        const numberOfBallsInput = document.createElement('input');
+        numberOfBallsInput.type = 'number';
+        numberOfBallsInput.className = 'numberOfBallsInput';
+        numberOfBallsInput.required = true;
+        numberOfBallsCell.appendChild(numberOfBallsInput);
+        row.appendChild(numberOfBallsCell);
+
+        // Append the row to the table body
+        tbody.appendChild(row);
+      });
+      emptyMessage.style.display = 'none';
+
+    }else {
+          emptyMessage.style.display = 'block';
+        }
+  })
+  .catch(error => console.error('Error:', error));
+
+
   </script>
 
 </body>
