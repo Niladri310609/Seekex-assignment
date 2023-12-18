@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const{createBucket,createBall,ListofBalls}= require("../controllers/GenericController")
+const{createBucket,createBall,ListofBalls,placeBallsInBuckets,updateBucket}= require("../controllers/GenericController")
 
 //====================>Bucket Creation==============
 
 router.post("/addbucket",createBucket)
 router.post("/addball",createBall)
 router.get("/list_of_balls",ListofBalls)
-
+router.get("/place_balls", placeBallsInBuckets)
+router.patch("/update",updateBucket)
 
 
 

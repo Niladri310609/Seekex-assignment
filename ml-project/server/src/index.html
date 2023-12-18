@@ -236,7 +236,17 @@ fetch('http://localhost:7001/list_of_balls')
         }
   })
   .catch(error => console.error('Error:', error));
-
+  window.onload = function () {
+    fetch('http://localhost:7001/update',{
+      method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+    })
+      .then(response => response.json())
+      .then(data => console.log('Update API response:', data))
+      .catch(error => console.error('Error calling update API:', error));
+  };
 
   </script>
 

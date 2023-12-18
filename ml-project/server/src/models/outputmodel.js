@@ -2,11 +2,16 @@ const mongoose = require("mongoose");
 
 const OutputSchema = new mongoose.Schema(
   {
-  ball: {type:String, trim:true,  unique:true, ref:'ball'},
-  bucket: {type:String, trim:true,  unique:true, ref:'bucket'},
-  tranxCountofBalls: {type:Number, required:true},
-  Placed_Volume:{type:Number, required:true}
-
+    ballColor: {type:String, trim:true},
+    bucketName: {type:String, trim:true},
+  tranxCountofBalls: {
+    type: Object,
+    required: true,
+  },
+  Placed_Volume: {
+    type: Object,
+    required: true,
+  },
 
   },
   { timestamps: true }

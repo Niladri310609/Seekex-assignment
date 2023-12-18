@@ -57,7 +57,16 @@ const createBucket = async (req, res) => {
     const AllBuckets = await Buckets.find({})
      if(AllBuckets.length !== 0){
 
-    await Buckets.updateMany({}, { $set: { empty_volume: "$capacity_in_Ci",occupied_volume:0 } });
+      await Buckets.updateMany({}, [
+        {
+          $set: {
+            empty_volume: {
+              $toDouble: "$capacity_in_Ci",
+            },
+            occupied_volume: 0,
+          },
+        },
+      ]);
      }
 
     const BucketsData = {
@@ -128,37 +137,56 @@ const createBall = async (req, res) => {
 
 const placeBallsInBuckets = async (req, res) => {
   try {
-    const balls = await Balls.find();
+    const ballsData = req.body;
     const buckets = await Buckets.find();
     const outputMessages = [];
-    const placedBalls = [];
     const placedBuckets = {};
 
-    for (const ball of balls) {
-      for (const bucket of buckets) {
-        if ((ball.size * ball.number) <= bucket.empty_volume) {
-          const placedBallCount = ball.number;
-          const placedVolume = ball.size * placedBallCount;
+    const sortedBuckets = [...buckets].sort((a, b) => b.empty_volume - a.empty_volume);
 
-          bucket.occupied_volume=placedVolume;
+    for (const ballData of ballsData) {
+      const { color, size, numberOfBalls } = ballData;
+
+      for (const bucket of sortedBuckets) {
+        const remainingVolume = bucket.empty_volume;
+        const ballsToFit = Math.floor(remainingVolume / size);
+
+        const placedBallsCount = Math.min(ballsToFit, numberOfBalls);
+        const placedVolume = placedBallsCount * size;
+
+        if (placedBallsCount > 0 && placedVolume <= remainingVolume) {
+          bucket.occupied_volume += placedVolume;
           bucket.empty_volume -= placedVolume;
           await bucket.save();
 
           const operationData = {
-            ball: ball._id.toString(),
-            bucket: bucket._id.toString(),
-            placedBallCount,
-            placedVolume,
+            ballColor: color,
+            bucketName: bucket.Name,
+            tranxCountofBalls: placedBallsCount,
+            Placed_Volume: placedVolume,
           };
           await Output.create(operationData);
 
-          placedBalls.push({ ball, count: placedBallCount });
-          placedBuckets[bucket.Name] = placedBuckets[bucket.Name] || [];
-          placedBuckets[bucket.Name].push(`${placedBallCount} ${ball.color} balls`);
-          outputMessages.push(`Placed ${placedBallCount} ${ball.color} balls in bucket ${bucket.Name}`);
-          break;
+          placedBuckets[bucket.Name] = placedBuckets[bucket.Name] || {};
+          placedBuckets[bucket.Name][color] = (placedBuckets[bucket.Name][color] || 0) + placedBallsCount;
+
+          outputMessages.push(`Placed ${placedBallsCount} ${color} balls in bucket ${bucket.Name}`);
+
+          // Update the numberOfBalls after placement
+          ballData.numberOfBalls -= placedBallsCount;
+
+          if (ballData.numberOfBalls === 0) {
+            break; // If all balls are placed, exit the loop
+          }
         }
       }
+    }
+
+    // Check if any balls were left unplaced
+    const unplacedBalls = ballsData.filter(ballData => ballData.numberOfBalls > 0);
+    if (unplacedBalls.length > 0) {
+      const unplacedBallsMessage = unplacedBalls.map(ballData => `${ballData.numberOfBalls} ${ballData.color} balls`).join(', ');
+      outputMessages.push(`No buckets have sufficient empty volume to place the remaining balls: ${unplacedBallsMessage}`);
     }
 
     const responseData = {
@@ -172,6 +200,33 @@ const placeBallsInBuckets = async (req, res) => {
     res.status(500).send({ status: false, message: error.message });
   }
 };
+
+
+
+
+
+
+
+const updateBucket = async(req,res)=>{
+
+ try{ const AllBuckets = await Buckets.find({})
+  if(AllBuckets.length !== 0){
+
+    await Buckets.updateMany({}, [
+      {
+        $set: {
+          empty_volume: {
+            $toDouble: "$capacity_in_Ci",
+          },
+          occupied_volume: 0,
+        },
+      },
+    ]);
+}}catch(error){
+   return res.status(500).send({status:false, message:error.message})
+}
+}
+
 
 const ListofBalls = async(req,res)=>{
 try {
@@ -189,4 +244,4 @@ try {
 
 
 
-module.exports ={createBucket,createBall,placeBallsInBuckets,ListofBalls}
+module.exports ={createBucket,createBall,placeBallsInBuckets,ListofBalls,updateBucket}
