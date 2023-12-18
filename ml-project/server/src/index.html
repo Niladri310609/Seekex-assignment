@@ -17,7 +17,7 @@
     <label for="bucketName">Bucket Name:</label>
     <input type="text" id="bucketName" required>
     <label for="bucketCapacity">Bucket Capacity:</label>
-    <input type="number" id="bucketCapacity" required>
+    <input type="text" id="bucketCapacity" required>
     <button type="submit">Create Bucket</button>
   </form>
 
@@ -117,6 +117,13 @@
           background-color: #45a049;
         }
      
+.color-circle {
+  width: 15px; 
+  height: 15px;
+  border-radius: 50%;
+  display:-ms-inline-grid;
+  margin-left:90px; 
+}
 
       </style>
       <table id="ballsTable">
@@ -157,13 +164,13 @@
   <script>
     const bucketForm = document.getElementById('bucketForm');
     const responseMessage = document.getElementById('responseMessage'); // Reference to the response message div
+    bucketForm.addEventListener('submit', placeBallsInBucket);
 
- 
     bucketForm.addEventListener('submit', function (event) {
       event.preventDefault();
       const bucketName = document.getElementById('bucketName').value;
-      const bucketCapacity = document.getElementById('bucketCapacity').value;
-
+      const bucketCapacity = document.getElementById('bucketCapacity').value.toString();
+  
       // Example using fetch:
       fetch(`http://localhost:7001/addbucket`, {
         method: 'POST',
@@ -218,7 +225,7 @@
     const numberOfBallsInput = row.querySelector('.numberOfBallsInput');
     const numberOfBalls = numberOfBallsInput.value;
 
-    // You can now use color and numberOfBalls as needed (e.g., send to the server)
+  
     console.log(`Color: ${color}, Number of Balls: ${numberOfBalls}`);
   });
 });
@@ -240,6 +247,15 @@ fetch('http://localhost:7001/list_of_balls')
         // Append cells to the row
         const colorCell = document.createElement('td');
         colorCell.textContent = ball.color;
+        const colorCircle = document.createElement('div');
+colorCircle.className = 'color-circle';
+colorCircle.style.backgroundColor = ball.color;
+
+// Append the color circle to the color cell
+colorCell.appendChild(colorCircle);
+
+// Append the color cell to the row
+row.appendChild(colorCell);
         row.appendChild(colorCell);
 
         const sizeCell = document.createElement('td');
@@ -251,6 +267,7 @@ fetch('http://localhost:7001/list_of_balls')
         numberOfBallsInput.type = 'number';
         numberOfBallsInput.className = 'numberOfBallsInput';
         numberOfBallsInput.required = true;
+        numberOfBallsInput.min = 0;
         numberOfBallsCell.appendChild(numberOfBallsInput);
         row.appendChild(numberOfBallsCell);
 
@@ -280,7 +297,9 @@ fetch('http://localhost:7001/list_of_balls')
 
 
   async function placeBallsInBucket(event) {
-      event.preventDefault();
+   try {
+    
+    event.preventDefault();
       const ballsData = Array.from(document.querySelectorAll('#ballsTable tbody tr')).map(row => {
     const color = row.dataset.color;
     const size = parseFloat(row.children[1].textContent);
@@ -300,11 +319,27 @@ fetch('http://localhost:7001/list_of_balls')
         },
         body: JSON.stringify(ballsData),
       });
+      if (response.status !== 200) {
+      if (response.status === 406) {
+
+        const errorMessage = await response.text();
+        alert(`Error: ${errorMessage}`);
+        return; 
+      } else {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+    }
+
 
       const responseData = await response.json();
 
       // Update the result message and table
       updateResult(responseData);
+    } catch (error) {
+      const errorMessage = error.message;
+
+alert(`Error: ${errorMessage}`);
+  } 
     }
 
 

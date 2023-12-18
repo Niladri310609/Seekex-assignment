@@ -137,6 +137,15 @@ const createBall = async (req, res) => {
 const placeBallsInBuckets = async (req, res) => {
   try {
     const ballsData = req.body;
+    const totalBalls = ballsData.reduce((total, ballData) => total + ballData.numberOfBalls, 0);
+
+    if (totalBalls === 0) {
+      return res.status(406).send({
+        status: false,
+        message: "To get suggestions, you need to place at least 1 ball.",
+      });
+    }
+
     const buckets = await Buckets.find();
     const outputMessages = [];
     const placedBuckets = {};
