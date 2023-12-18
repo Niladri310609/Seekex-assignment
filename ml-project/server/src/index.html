@@ -163,8 +163,10 @@
   
   <script>
     const bucketForm = document.getElementById('bucketForm');
+    const placeBallsForm = document.getElementById('bucketSuggestionForm');
+
     const responseMessage = document.getElementById('responseMessage'); // Reference to the response message div
-    bucketForm.addEventListener('submit', placeBallsInBucket);
+    placeBallsForm.addEventListener('submit', placeBallsInBucket);
 
     bucketForm.addEventListener('submit', function (event) {
       event.preventDefault();
@@ -183,7 +185,12 @@
       .then(data => {
     responseMessage.textContent = `Response: ${data.message}`;
     responseMessage.style.display = 'block';
-  })      .catch(error => console.error('Error:', error));
+
+    setTimeout(() => {
+        location.reload();
+      }, 2000);
+    
+  }).catch(error => console.error('Error:', error));
     });
     
     const ballForm = document.getElementById('ballForm');
@@ -208,7 +215,7 @@
     responseMessage.style.display = 'block';
     setTimeout(() => {
         location.reload();
-      }, 50);
+      },2000);
     })
        .catch(error => console.error('Error:', error));
     });
@@ -360,6 +367,7 @@ alert(`Error: ${errorMessage}`);
 
       // Display the result container
       resultContainer.style.display = 'block';
+  
     }
 
 

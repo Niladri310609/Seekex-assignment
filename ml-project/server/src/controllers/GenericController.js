@@ -242,7 +242,7 @@ const updateBucket = async(req,res)=>{
 
 const ListofBalls = async(req,res)=>{
 try {
-  const AllBalls = await Balls.find({}).sort({createdAt:-1})
+  const AllBalls = await Balls.find({}).sort({createdAt:1})
 
   if(AllBalls.length === 0){
        return res.status(200).send({status:true, message:"No balls found, add some", data:[]})
