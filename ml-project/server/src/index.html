@@ -32,9 +32,9 @@
   </form>
 
   <!-- Place Balls in Buckets Form -->
- 
+  <div class="container">
     <h2>Bucket Suggestion</h2>
-    <form id="bucketSuggestionForm">
+    <form id="bucketSuggestionForm" onsubmit="placeBallsInBucket(event)">
       <style>
         body {
       background-image: url('/home/ds/Desktop/SEEKEX ASSIGNMENT/Seekex-assignment/ml-project/server/src/assets/images.jpeg');
@@ -79,6 +79,30 @@
         text-align: center;
         color: #be3a3a;
       }
+      .result-message {
+      background-color: #2d572f;
+      color: rgb(255, 255, 255);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .result-table th, .result-table td {
+      border: 1px solid #4caf50;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .result-table th {
+      background-color: #45a049;
+      color: white;
+    }
   
       button {
   background-color: #4caf50;
@@ -111,8 +135,12 @@
 
       <button type="submit">Place Balls In Bucket</button>
     </form>
+    <div id="resultContainer" class="table-container" style="display: none;">
+      <div id="resultMessage" class="result-message"></div>
+      <table id="resultTable" class="result-table"></table>
+    </div>
+  </div>
 
-    <h2>Result</h2>
 
   
   
@@ -247,6 +275,61 @@ fetch('http://localhost:7001/list_of_balls')
       .then(data => console.log('Update API response:', data))
       .catch(error => console.error('Error calling update API:', error));
   };
+
+
+
+
+  async function placeBallsInBucket(event) {
+      event.preventDefault();
+      const ballsData = Array.from(document.querySelectorAll('#ballsTable tbody tr')).map(row => {
+    const color = row.dataset.color;
+    const size = parseFloat(row.children[1].textContent);
+    const numberOfBallsInput = row.querySelector('.numberOfBallsInput');
+    const numberOfBalls = parseInt(numberOfBallsInput.value, 10) || 0;
+
+    return {
+      color,
+      size,
+      numberOfBalls,
+    };
+  });
+      const response = await fetch('http://localhost:7001/place_balls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ballsData),
+      });
+
+      const responseData = await response.json();
+
+      // Update the result message and table
+      updateResult(responseData);
+    }
+
+
+  function updateResult(data) {
+      const resultContainer = document.getElementById('resultContainer');
+      const resultMessage = document.getElementById('resultMessage');
+      const resultTable = document.getElementById('resultTable');
+
+      resultMessage.textContent = data.message.join('\n');
+
+      const tableRows = Object.entries(data.data).map(([bucket, balls]) => {
+        const ballsString = Object.entries(balls).map(([color, count]) => `${count} ${color} Balls`).join(', ');
+
+        return `<tr><td>${bucket}:</td><td>${ballsString}</td></tr>`;
+      });
+
+      resultTable.innerHTML = `<thead><tr><th>Bucket</th><th>Balls</th></tr></thead><tbody>${tableRows.join('')}</tbody>`;
+
+      // Display the result container
+      resultContainer.style.display = 'block';
+    }
+
+
+
+
 
   </script>
 

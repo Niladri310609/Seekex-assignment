@@ -134,7 +134,6 @@ const createBall = async (req, res) => {
     return res.status(500).send({ status: false, message: error.message });
   }
 };
-
 const placeBallsInBuckets = async (req, res) => {
   try {
     const ballsData = req.body;
@@ -146,17 +145,18 @@ const placeBallsInBuckets = async (req, res) => {
 
     for (const ballData of ballsData) {
       const { color, size, numberOfBalls } = ballData;
+      let remainingBalls = numberOfBalls;
 
       for (const bucket of sortedBuckets) {
         const remainingVolume = bucket.empty_volume;
         const ballsToFit = Math.floor(remainingVolume / size);
 
-        const placedBallsCount = Math.min(ballsToFit, numberOfBalls);
+        const placedBallsCount = Math.min(ballsToFit, remainingBalls);
         const placedVolume = placedBallsCount * size;
 
-        if (placedBallsCount > 0 && placedVolume <= remainingVolume) {
-          bucket.occupied_volume += placedVolume;
-          bucket.empty_volume -= placedVolume;
+        if (placedBallsCount > 0) {
+          bucket.occupied_volume = parseFloat((bucket.occupied_volume + placedVolume).toFixed(2));
+          bucket.empty_volume = parseFloat((bucket.empty_volume - placedVolume).toFixed(2));
           await bucket.save();
 
           const operationData = {
@@ -170,23 +170,22 @@ const placeBallsInBuckets = async (req, res) => {
           placedBuckets[bucket.Name] = placedBuckets[bucket.Name] || {};
           placedBuckets[bucket.Name][color] = (placedBuckets[bucket.Name][color] || 0) + placedBallsCount;
 
-          outputMessages.push(`Placed ${placedBallsCount} ${color} balls in bucket ${bucket.Name}`);
+          outputMessages.push(`Placed ${placedBallsCount} ${color} balls in ${bucket.Name}...`);
 
-          // Update the numberOfBalls after placement
-          ballData.numberOfBalls -= placedBallsCount;
+          // Update the remaining balls after placement
+          remainingBalls -= placedBallsCount;
 
-          if (ballData.numberOfBalls === 0) {
+          if (remainingBalls === 0) {
             break; // If all balls are placed, exit the loop
           }
         }
       }
-    }
 
-    // Check if any balls were left unplaced
-    const unplacedBalls = ballsData.filter(ballData => ballData.numberOfBalls > 0);
-    if (unplacedBalls.length > 0) {
-      const unplacedBallsMessage = unplacedBalls.map(ballData => `${ballData.numberOfBalls} ${ballData.color} balls`).join(', ');
-      outputMessages.push(`No buckets have sufficient empty volume to place the remaining balls: ${unplacedBallsMessage}`);
+      // If some balls are still unplaced, add them to the unplacedBalls array
+      if (remainingBalls > 0) {
+        outputMessages.push(`No buckets have sufficient empty volume to place the remaining ${remainingBalls} ${color} balls.`);
+
+      }
     }
 
     const responseData = {
@@ -200,6 +199,10 @@ const placeBallsInBuckets = async (req, res) => {
     res.status(500).send({ status: false, message: error.message });
   }
 };
+
+
+
+
 
 
 
