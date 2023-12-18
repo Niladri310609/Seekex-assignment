@@ -16,3 +16,17 @@ MAKE SURE BACKEND SERVER IS RUNNING ALL THE TIME OTHERWISE PAGE WILL NOT RESPONS
 
 
 AFTER STARTING THE BACKEND SERVER ONLY, TRY TO RUN THE `INDEX.HTML` File in your web 
+
+
+Path to start the server ::::::::::::::::=========================>
+
+1.************************* Go to the  `/Seekex-assignment/ml-project/server` ********************
+
+2. ************************run "npm i" to download dependencies**************
+3. **************************************run "npm start" to run the backend server on port 7001**********
+4. **********At the end, open the index.html file in your chrome web browser and keep backend server at running stage*************************
+
+
+
+
+=================> Happy Coding =====================>
